@@ -1,10 +1,13 @@
-from tkinter import *
+from datetime import *
 
-root = Tk()
-root.geometry('300x300')
-root.config(bg='black')
 
-thesquare = Label(root, text='square', bg='black', fg='white')
-thesquare.place(x=130, y=130)
+date = datetime.now().date()
+timee = datetime.now().strftime('%H:%M:%S')
 
-root.mainloop()
+datet = datetime.now()
+
+print(date)
+
+print(timee)
+
+print(datet)

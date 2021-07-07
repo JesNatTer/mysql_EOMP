@@ -18,8 +18,8 @@ mydb = mysql.connector.connect(user='lifechoices', password='@Lifechoices1234', 
                                    auth_plugin='mysql_native_password')
 
 mycursor = mydb.cursor()
-dcurrent = datetime.now().date().strftime("%Y-%m-%d")
-tcurrent = datetime.now().time().strftime('%H:%M:%S')
+si_dcurrent = datetime.now().date().strftime("%Y-%m-%d")
+si_tcurrent = datetime.now().time().strftime('%H:%M:%S')
 
 
 class Login:
@@ -50,7 +50,7 @@ class Login:
             else:
                 if self.passent.get() == records[0][0] and records[0][1] != 'ADMIN':
                     signinsql = 'INSERT INTO signin (ID, Sign_in_date, Sign_in_time) VALUES (%s, %s, %s)'
-                    signinval = (self.ident.get(), dcurrent, tcurrent)
+                    signinval = (self.ident.get(), si_dcurrent, si_tcurrent)
                     mycursor.execute(signinsql, signinval)
                     mydb.commit()
                     messagebox.showinfo("Login Successful", "Enter to the next screen.")
@@ -190,7 +190,7 @@ class Login:
                 else:
                     if apassentry.get() == records[0][0] and records[0][1] == 'ADMIN':
                         signinsql = 'INSERT INTO signin (ID, Sign_in_date, Sign_in_time) VALUES (%s, %s, %s)'
-                        signinval = (aidentry.get(), dcurrent, tcurrent)
+                        signinval = (aidentry.get(), si_dcurrent, si_tcurrent)
                         mycursor.execute(signinsql, signinval)
                         mydb.commit()
                         messagebox.showinfo("Login Successful", "Enter to the next screen.")
@@ -234,9 +234,11 @@ class Login:
         rolelbl.place(x=20, y=20)
 
         def signout():
-            signoutsql = "INSERT INTO signin (Sign_out_date, Sign_out_time) VALUES (%s, %s) WHERE ID='" \
-                         + self.ident.get() + "' AND Sign_in_date='" + dcurrent + "'"
-            signoutval = (dcurrent, tcurrent)
+            so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
+            so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
+            signoutsql = "UPDATE signin SET Sign_out_date=%s, Sign_out_time=%s WHERE ID='" \
+                         + self.ident.get() + "' AND Sign_in_date='" + si_dcurrent + "'"
+            signoutval = (so_dcurrent, so_tcurrent)
             mycursor.execute(signoutsql, signoutval)
             mydb.commit()
             messagebox.showinfo('Sign Out successful', 'Enjoy the rest of your day!')
@@ -252,30 +254,32 @@ class Login:
         mycursor.execute("SELECT Name, Surname, Role FROM users WHERE ID='" + self.ident.get() + "'")
         data = mycursor.fetchall()
         asiscreen = Toplevel()
-        asiscreen.geometry('600x600')
+        asiscreen.geometry('400x500')
         asicanvas = Canvas(asiscreen, width=700, height=700, highlightbackground='yellow')
         asicanvas.place(x=-10, y=-10)
         asiimg = PhotoImage(file="./images/scott-webb-OxHPDs4WV8Y-unsplash (1).png")
-        asiimg = asiimg.subsample(2)
+        asiimg = asiimg.subsample(1)
         asicanvas.create_image(230, 290, image=asiimg)
 
         signedinlbl = Label(asiscreen, text='Signed In', font=titlefont, bg='#aaa')
         signedinlbl.place(x=130, y=20)
-        frame = Frame(asiscreen, width=300, height=200, bg='#aaa')
-        frame.place(x=50, y=250)
+        aframe = Frame(asiscreen, width=300, height=200, bg='#aaa')
+        aframe.place(x=50, y=250)
 
         def asignout():
-            signoutsql = "INSERT INTO signin (Sign_out_date, Sign_out_time) VALUES (%s, %s) WHERE ID='" \
-                         + self.ident.get() + "' AND Sign_in_date='" + dcurrent + "'"
-            signoutval = (dcurrent, tcurrent)
+            so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
+            so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
+            signoutsql = "UPDATE signin SET Sign_out_date=%s, Sign_out_time=%s WHERE ID='" \
+                         + self.ident.get() + "' AND Sign_in_date='" + si_dcurrent + "'"
+            signoutval = (so_dcurrent, so_tcurrent)
             mycursor.execute(signoutsql, signoutval)
             mydb.commit()
             messagebox.showinfo('Sign Out successful', 'Enjoy the rest of your day!')
             asiscreen.destroy()
             root.destroy()
 
-        signoutbtn = Button(frame, text='Sign Out', command=asignout)
-        signoutbtn.place(x=130, y=100)
+        signoutbtn = Button(aframe, text='Sign Out', command=asignout)
+        signoutbtn.place(x=120, y=100)
 
         asiscreen.mainloop()
 

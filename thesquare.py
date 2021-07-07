@@ -1,13 +1,29 @@
-from datetime import *
+from tkinter import *
+from tkinter.ttk import *
+from tkinter import messagebox
 
+biglist = [(123, 456, 789), (123, 456, 789), (123, 456, 789), (123, 456, 789)]
 
-date = datetime.now().date()
-timee = datetime.now().strftime('%H:%M:%S')
+root = Tk()
+root.geometry('400x400')
 
-datet = datetime.now()
+tv = Treeview(root)
+tv['columns'] = ('number1', 'number2', 'number3')
+tv.column('#0', width=0, stretch=NO)
+tv.column('number1', anchor=CENTER, width=80)
+tv.column('number2', anchor=CENTER, width=80)
+tv.column('number3', anchor=CENTER, width=80)
 
-print(date)
+tv.heading('#0', text='', anchor=CENTER)
+tv.heading('number1', text='n1', anchor=CENTER)
+tv.heading('number2', text='n2', anchor=CENTER)
+tv.heading('number3', text='n3', anchor=CENTER)
 
-print(timee)
+tv.insert(parent='', index=0, iid=0, text='', values=biglist[0])
+tv.insert(parent='', index=1, iid=1, text='', values=biglist[1])
+tv.insert(parent='', index=2, iid=2, text='', values=biglist[2])
+tv.insert(parent='', index=3, iid=3, text='', values=biglist[3])
 
-print(datet)
+tv.pack()
+
+root.mainloop()

@@ -49,13 +49,22 @@ class Login:
                 self.passent.delete(0, END)
             else:
                 if self.passent.get() == records[0][0] and records[0][1] != 'ADMIN':
-                    signinsql = 'INSERT INTO signin (ID, Sign_in_date, Sign_in_time) VALUES (%s, %s, %s)'
-                    signinval = (self.ident.get(), si_dcurrent, si_tcurrent)
-                    mycursor.execute(signinsql, signinval)
-                    mydb.commit()
-                    messagebox.showinfo("Login Successful", "Enter to the next screen.")
-                    root.withdraw()
-                    self.signedinscreen()
+                    mycursor.execute(
+                        "SELECT * FROM Signin WHERE ID='" + self.ident.get() + "' AND Sign_in_date=curdate() "
+                                                                               "AND sign_out_time is NULL")
+                    check = mycursor.fetchall()
+                    if len(check) > 0:
+                        messagebox.showinfo("Login Successful", "Enter to the next screen.")
+                        root.withdraw()
+                        self.signedinscreen()
+                    else:
+                        signinsql = 'INSERT INTO signin (ID, Sign_in_date, Sign_in_time) VALUES (%s, %s, %s)'
+                        signinval = (self.ident.get(), si_dcurrent, si_tcurrent)
+                        mycursor.execute(signinsql, signinval)
+                        mydb.commit()
+                        messagebox.showinfo("Login Successful", "Enter to the next screen.")
+                        root.withdraw()
+                        self.signedinscreen()
                 elif self.passent.get() == records[0][0] and records[0][1] == 'ADMIN':
                     messagebox.showwarning('Use Admin Login', 'Admin users must log in through the Admin screen.')
                 else:
@@ -116,40 +125,40 @@ class Login:
             roleselector.place(x=130, y=130)
 
             def SignUp():
-                try:
+                if (identry.get() == '' or nameentry.get() == '' or surnameentry.get() == ''
+                        or phoneentry.get() == '' or passentry.get() == '' or roleset.get() == 'Select your role'
+                        or kinnameentry.get() == '' or kin_noentry.get() == ''):
+                    messagebox.showerror('Entries Unfilled', 'Please fill out all entries before signing up.')
+                else:
+                    #try:
                     phonevalid = int(phoneentry.get())
                     kphonevalid = int(kin_noentry.get())
-                    if (identry.get() == '' or nameentry.get() == '' or surnameentry.get() == ''
-                            or phoneentry.get() == '' or passentry.get() == '' or roleset.get() == 'Select your role'
-                            or kinnameentry.get() == '' or kin_noentry.get() == ''):
-                        messagebox.showerror('Entries Unfilled', 'Please fill out all entries before signing up.')
+                    if len(phoneentry.get()) != 10 and len(kin_noentry.get()) != 10:
+                        messagebox.showerror('Invalid Contact Number',
+                                             'Length of contact number must be 10 digits.')
                     else:
-                        if len(phoneentry.get()) != 10 and len(kin_noentry.get()) != 10:
-                            messagebox.showerror('Invalid Contact Number',
-                                                 'Length of contact number must be 10 digits.')
+                        idno = rsaidnumber.parse(identry.get())
+                        if idno.valid is False:
+                            messagebox.showerror('Invalid ID', 'Please enter a valid SA ID.')
                         else:
-                            idno = rsaidnumber.parse(identry.get())
-                            if idno.valid is False:
-                                messagebox.showerror('Invalid ID', 'Please enter a valid SA ID.')
+                            if str.isalpha(nameentry.get()) is False or str.isalpha(kinnameentry.get()) is False\
+                                    or str.isalpha(surnameentry.get()) is False:
+                                messagebox.showerror('Invalid Name/Surname',
+                                                     'Please enter only alphabetic characters for name')
                             else:
-                                if str.isalpha(nameentry.get()) is False or str.isalpha(kinnameentry.get()) is False\
-                                        or str.isalpha(surnameentry.get()) is False:
-                                    messagebox.showerror('Invalid Name/Surname',
-                                                         'Please enter only alphabetic characters for name')
-                                else:
-                                    sql1 = "INSERT INTO users VALUES (%s, %s, %s, %s, %s, %s)"
-                                    val1 = (identry.get(), nameentry.get(), surnameentry.get(), phoneentry.get(),
-                                            passentry.get(), roleset.get())
-                                    sql2 = "INSERT INTO next_of_kin (ID, Name, Phone_number) VALUES (%s, %s, %s)"
-                                    val2 = (identry.get(), kinnameentry.get(), kin_noentry.get())
-                                    mycursor.execute(sql1, val1)
-                                    mycursor.execute(sql2, val2)
-                                    mydb.commit()
-                                    messagebox.showinfo("Successful", "Your account is registered. "
-                                                                      "You may now sign in.")
-                                    window.destroy()
-                except ValueError:
-                    messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
+                                sql1 = "INSERT INTO users VALUES (%s, %s, %s, %s, %s, %s)"
+                                val1 = (identry.get(), nameentry.get(), surnameentry.get(), phoneentry.get(),
+                                        passentry.get(), roleset.get())
+                                sql2 = "INSERT INTO next_of_kin (ID, Name, Phone_number) VALUES (%s, %s, %s)"
+                                val2 = (identry.get(), kinnameentry.get(), kin_noentry.get())
+                                mycursor.execute(sql1, val1)
+                                mycursor.execute(sql2, val2)
+                                mydb.commit()
+                                messagebox.showinfo("Successful", "Your account is registered. "
+                                                                  "You may now sign in.")
+                                window.destroy()
+                   # except ValueError:
+                       # messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
 
             registeruserbtn = Button(window, text='Sign Up', command=SignUp)
             registeruserbtn.place(x=20, y=300)
@@ -189,13 +198,22 @@ class Login:
                     apassentry.delete(0, END)
                 else:
                     if apassentry.get() == records[0][0] and records[0][1] == 'ADMIN':
-                        signinsql = 'INSERT INTO signin (ID, Sign_in_date, Sign_in_time) VALUES (%s, %s, %s)'
-                        signinval = (aidentry.get(), si_dcurrent, si_tcurrent)
-                        mycursor.execute(signinsql, signinval)
-                        mydb.commit()
-                        messagebox.showinfo("Login Successful", "Enter to the next screen.")
-                        ascreen.withdraw()
-                        self.adminscreen()
+                        mycursor.execute(
+                            "SELECT * FROM Signin WHERE ID='" + aidentry.get() +
+                            "' AND Sign_in_date=curdate() AND Sign_out_time is NULL")
+                        check = mycursor.fetchall()
+                        if len(check) > 0:
+                            messagebox.showinfo("Login Successful", "Enter to the next screen.")
+                            ascreen.withdraw()
+                            self.adminscreen()
+                        else:
+                            signinsql = 'INSERT INTO signin (ID, Sign_in_date, Sign_in_time) VALUES (%s, %s, %s)'
+                            signinval = (aidentry.get(), si_dcurrent, si_tcurrent)
+                            mycursor.execute(signinsql, signinval)
+                            mydb.commit()
+                            messagebox.showinfo("Login Successful", "Enter to the next screen.")
+                            ascreen.withdraw()
+                            self.adminscreen()
 
                     elif apassentry.get() == records[0][0] and records[0][1] != 'ADMIN':
                         messagebox.showwarning('Unauthorized',
@@ -261,16 +279,34 @@ class Login:
         asiimg = asiimg.subsample(1)
         asicanvas.create_image(230, 290, image=asiimg)
 
+        mycursor.execute("SELECT * FROM Signin WHERE Sign_in_date=curdate() AND Sign_out_date IS NULL")
+        countusers = mycursor.fetchall()
+        usersin = len(countusers)
+
+        userssignedin = Label(asiscreen, text="Users Currently Logged In: " + str(usersin), bg='#aaa')
+        userssignedin.place(x=50, y=190)
+
         signedinlbl = Label(asiscreen, text='Signed In', font=titlefont, bg='#aaa')
         signedinlbl.place(x=130, y=20)
         aframe = Frame(asiscreen, width=300, height=200, bg='#aaa')
         aframe.place(x=50, y=250)
 
+        def count():
+            mycursor.execute("SELECT * FROM Signin WHERE Sign_in_date=curdate() AND Sign_out_time is NULL")
+            records=mycursor.fetchall()
+            n_usersin = len(records)
+            print(records)
+            userssignedin.config(text="Users Currently Logged In: " + str(n_usersin))
+
+        refreshbtn = Button(asiscreen, text='Refresh Users', command=count)
+        refreshbtn.place(x=50, y=220)
+
         def asignout():
             so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
             so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
             signoutsql = "UPDATE signin SET Sign_out_date=%s, Sign_out_time=%s WHERE ID='" \
-                         + self.ident.get() + "' AND Sign_in_date='" + si_dcurrent + "'"
+                         + self.ident.get() + "' AND Sign_in_date='" + si_dcurrent + "'" \
+                         "AND Sign_out_time is NULL"
             signoutval = (so_dcurrent, so_tcurrent)
             mycursor.execute(signoutsql, signoutval)
             mydb.commit()
@@ -283,7 +319,7 @@ class Login:
 
         def editusers():
             escreen = Toplevel()
-            escreen.geometry('910x600')
+            escreen.geometry('940x600')
             escreen.resizable(0, 0)
 
             def dataselect(event=None):
@@ -389,14 +425,14 @@ class Login:
             anextofkinnoentry.place(x=150, y=240)
 
             def adduser():
-                try:
-                    phonevalid = int(anumberentry.get())
-                    kphonevalid = int(anextofkinnoentry.get())
-                    if (aidentry.get() == '' or anameentry.get() == '' or asurnameentry.get() == ''
-                            or anumberentry.get() == '' or apasswordentry.get() == '' or aroleset.get() == 'Select your role'
-                            or anextofkinnameentry.get() == '' or anextofkinnoentry.get() == ''):
-                        messagebox.showerror('Entries Unfilled', 'Please fill out all entries before registering user.')
-                    else:
+                if (aidentry.get() == '' or anameentry.get() == '' or asurnameentry.get() == ''
+                        or anumberentry.get() == '' or apasswordentry.get() == '' or aroleset.get() == 'Select your role'
+                        or anextofkinnameentry.get() == '' or anextofkinnoentry.get() == ''):
+                    messagebox.showerror('Entries Unfilled', 'Please fill out all entries before registering user.')
+                else:
+                    try:
+                        phonevalid = int(anumberentry.get())
+                        kphonevalid = int(anextofkinnoentry.get())
                         if len(anumberentry.get()) != 10 and len(anextofkinnoentry.get()) != 10:
                             messagebox.showerror('Invalid Contact Number',
                                                  'Length of contact number must be 10 digits.')
@@ -422,8 +458,8 @@ class Login:
 
                                     users.delete(*users.get_children())
                                     tvinsert()
-                except ValueError:
-                    messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
+                    except ValueError:
+                        messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
 
             adduserbtn = Button(addframe, text='Commit', command=adduser)
             adduserbtn.place(x=280, y=235)
@@ -474,14 +510,14 @@ class Login:
                 edata = users.focus()
                 items = users.item(edata)
                 items = items['values']
-                try:
-                    phonevalid = int(enumberentry.get())
-                    kphonevalid = int(enextofkinnoentry.get())
-                    if (enameentry.get() == '' or esurnameentry.get() == ''
-                            or enumberentry.get() == '' or epasswordentry.get() == '' or eroleset.get() == ''
-                            or enextofkinnameentry.get() == '' or enextofkinnoentry.get() == ''):
-                        messagebox.showerror('Entries Unfilled', 'Please fill out all entries before registering user.')
-                    else:
+                if (enameentry.get() == '' or esurnameentry.get() == ''
+                        or enumberentry.get() == '' or epasswordentry.get() == '' or eroleset.get() == ''
+                        or enextofkinnameentry.get() == '' or enextofkinnoentry.get() == ''):
+                    messagebox.showerror('Entries Unfilled', 'Please fill out all entries before registering user.')
+                else:
+                    try:
+                        phonevalid = int(enumberentry.get())
+                        kphonevalid = int(enextofkinnoentry.get())
                         if len(enumberentry.get()) != 10 and len(enextofkinnoentry.get()) != 10:
                             messagebox.showerror('Invalid Contact Number',
                                                  'Length of contact number must be 10 digits.')
@@ -505,8 +541,8 @@ class Login:
 
                                 users.delete(*users.get_children())
                                 tvinsert()
-                except ValueError:
-                    messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
+                    except ValueError:
+                        messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
 
             edituserbtn = Button(editframe, text='Commit', command=edituser)
             edituserbtn.place(x=280, y=235)
@@ -545,11 +581,11 @@ class Login:
             escreen.mainloop()
 
         modifybtn = Button(aframe, text='Edit database', command=editusers)
-        modifybtn.place(x=70, y=50)
+        modifybtn.place(x=60, y=50)
 
         def logprivilege():
             lscreen = Toplevel()
-            lscreen.geometry('500x500')
+            lscreen.geometry('560x500')
             lscreen.resizable(0, 0)
 
             si_users = Treeview(lscreen)
@@ -580,19 +616,25 @@ class Login:
             si_users.place(x=25, y=50)
 
             def loguserout():
-                select = str(int(si_users.selection()[0]) + 1)
-                so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
-                so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
-                lsql = "UPDATE signin SET Sign_out_date=%s, Sign_out_time=%s WHERE SignedIn='" \
-                             + select + "' AND Sign_in_date='" + si_dcurrent + "'"
-                lval = (so_dcurrent, so_tcurrent)
-                mycursor.execute(lsql, lval)
-                mydb.commit()
-                si_users.delete(*si_users.get_children())
-                mycursor.execute('SELECT * FROM Signin')
-                records = mycursor.fetchall()
-                for i in range(len(records)):
-                    si_users.insert(parent='', index=i, iid=i, text='', values=records[i])
+                if si_users.selection() == ():
+                    messagebox.showerror("Error", "Please select user to log out")
+                else:
+                    ldata = si_users.focus()
+                    litems = si_users.item(ldata)
+                    litems = litems['values']
+                    select = str(int(si_users.selection()[0]) + 1)
+                    so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
+                    so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
+                    lsql = "UPDATE signin SET Sign_out_date=%s, Sign_out_time=%s WHERE SignedIn='" \
+                                 + select + "' AND Sign_in_date='" + litems[2] + "'"
+                    lval = (so_dcurrent, so_tcurrent)
+                    mycursor.execute(lsql, lval)
+                    mydb.commit()
+                    si_users.delete(*si_users.get_children())
+                    mycursor.execute('SELECT * FROM Signin')
+                    records = mycursor.fetchall()
+                    for i in range(len(records)):
+                        si_users.insert(parent='', index=i, iid=i, text='', values=records[i])
 
             logoutbtn = Button(lscreen, text='Log user out', command=loguserout)
             logoutbtn.place(x=130, y=300)
@@ -600,7 +642,7 @@ class Login:
             lscreen.mainloop()
 
         logbtn = Button(aframe, text='Log users out', command=logprivilege)
-        logbtn.place(x=140, y=50)
+        logbtn.place(x=150, y=50)
 
         asiscreen.mainloop()
 

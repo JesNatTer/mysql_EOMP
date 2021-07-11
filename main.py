@@ -21,6 +21,9 @@ mycursor = mydb.cursor()
 si_dcurrent = datetime.now().date().strftime("%Y-%m-%d")
 si_tcurrent = datetime.now().time().strftime('%H:%M:%S')
 
+"""
+Main window
+"""
 
 class Login:
     def __init__(self, master):
@@ -40,6 +43,8 @@ class Login:
         self.passent = Entry(master)
         self.passent.place(x=135, y=180)
 
+
+        # Function to sign in user
         def Signin():
             mycursor.execute("SELECT Password, Role FROM users WHERE ID='" + self.ident.get() + "'")
             records = mycursor.fetchall()
@@ -77,6 +82,7 @@ class Login:
         self.registerlbl = Label(master, text='If you do not have an account, please register:', bg='#83E6DC')
         self.registerlbl.place(x=75, y=310)
 
+        # Function that opens the register window
         def Register():
             window = Toplevel()
             window.geometry('300x400')
@@ -124,41 +130,42 @@ class Login:
             roleselector['state'] = 'readonly'
             roleselector.place(x=130, y=130)
 
+            # Function for registering user to the database
             def SignUp():
                 if (identry.get() == '' or nameentry.get() == '' or surnameentry.get() == ''
                         or phoneentry.get() == '' or passentry.get() == '' or roleset.get() == 'Select your role'
                         or kinnameentry.get() == '' or kin_noentry.get() == ''):
                     messagebox.showerror('Entries Unfilled', 'Please fill out all entries before signing up.')
                 else:
-                    #try:
-                    phonevalid = int(phoneentry.get())
-                    kphonevalid = int(kin_noentry.get())
-                    if len(phoneentry.get()) != 10 and len(kin_noentry.get()) != 10:
-                        messagebox.showerror('Invalid Contact Number',
-                                             'Length of contact number must be 10 digits.')
-                    else:
-                        idno = rsaidnumber.parse(identry.get())
-                        if idno.valid is False:
-                            messagebox.showerror('Invalid ID', 'Please enter a valid SA ID.')
+                    try:
+                        phonevalid = int(phoneentry.get())
+                        kphonevalid = int(kin_noentry.get())
+                        if len(phoneentry.get()) != 10 and len(kin_noentry.get()) != 10:
+                            messagebox.showerror('Invalid Contact Number',
+                                                 'Length of contact number must be 10 digits.')
                         else:
-                            if str.isalpha(nameentry.get()) is False or str.isalpha(kinnameentry.get()) is False\
-                                    or str.isalpha(surnameentry.get()) is False:
-                                messagebox.showerror('Invalid Name/Surname',
-                                                     'Please enter only alphabetic characters for name')
+                            idno = rsaidnumber.parse(identry.get())
+                            if idno.valid is False:
+                                messagebox.showerror('Invalid ID', 'Please enter a valid SA ID.')
                             else:
-                                sql1 = "INSERT INTO users VALUES (%s, %s, %s, %s, %s, %s)"
-                                val1 = (identry.get(), nameentry.get(), surnameentry.get(), phoneentry.get(),
-                                        passentry.get(), roleset.get())
-                                sql2 = "INSERT INTO next_of_kin (ID, Name, Phone_number) VALUES (%s, %s, %s)"
-                                val2 = (identry.get(), kinnameentry.get(), kin_noentry.get())
-                                mycursor.execute(sql1, val1)
-                                mycursor.execute(sql2, val2)
-                                mydb.commit()
-                                messagebox.showinfo("Successful", "Your account is registered. "
-                                                                  "You may now sign in.")
-                                window.destroy()
-                   # except ValueError:
-                       # messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
+                                if str.isalpha(nameentry.get()) is False or str.isalpha(kinnameentry.get()) is False\
+                                        or str.isalpha(surnameentry.get()) is False:
+                                    messagebox.showerror('Invalid Name/Surname',
+                                                         'Please enter only alphabetic characters for name')
+                                else:
+                                    sql1 = "INSERT INTO users VALUES (%s, %s, %s, %s, %s, %s)"
+                                    val1 = (identry.get(), nameentry.get(), surnameentry.get(), phoneentry.get(),
+                                            passentry.get(), roleset.get())
+                                    sql2 = "INSERT INTO next_of_kin (ID, Name, Phone_number) VALUES (%s, %s, %s)"
+                                    val2 = (identry.get(), kinnameentry.get(), kin_noentry.get())
+                                    mycursor.execute(sql1, val1)
+                                    mycursor.execute(sql2, val2)
+                                    mydb.commit()
+                                    messagebox.showinfo("Successful", "Your account is registered. "
+                                                                      "You may now sign in.")
+                                    window.destroy()
+                    except ValueError:
+                       messagebox.showerror('Invalid details', 'Phone number must be in digits only.')
 
             registeruserbtn = Button(window, text='Sign Up', command=SignUp)
             registeruserbtn.place(x=20, y=300)
@@ -166,6 +173,7 @@ class Login:
         self.registerbtn = Button(master, text='Register', width=15, command=Register)
         self.registerbtn.place(x=140, y=340)
 
+        # Function to open the admin sign in window after control-a keys have been pressed
         def AdminSignIn(event=None):
             master.withdraw()
             ascreen = Toplevel()
@@ -189,6 +197,7 @@ class Login:
             apassentry = Entry(aframe)
             apassentry.place(x=140, y=60)
 
+            # Function to sign in admin to the admin log in screen
             def Asignin():
                 mycursor.execute("SELECT Password, Role FROM users WHERE ID='" + aidentry.get() + "'")
                 records = mycursor.fetchall()
@@ -228,10 +237,12 @@ class Login:
 
             ascreen.mainloop()
 
+        # Bind that opens the admin signin screen
         master.bind('<Control-a>', AdminSignIn)
 
         master.mainloop()
 
+    # Sign in screen for normal users
     def signedinscreen(self):
         mycursor.execute("SELECT Name, Surname, Role FROM users WHERE ID='" + self.ident.get() + "'")
         data = mycursor.fetchall()
@@ -251,6 +262,7 @@ class Login:
         rolelbl = Label(frame, text='Role: ' + data[0][2], bg='#aaa')
         rolelbl.place(x=20, y=20)
 
+        # function to sign out normal users
         def signout():
             so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
             so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
@@ -268,9 +280,8 @@ class Login:
 
         sscreen.mainloop()
 
+    # Admin screen where the admin can edit and sign out users
     def adminscreen(self):
-        mycursor.execute("SELECT Name, Surname, Role FROM users WHERE ID='" + self.ident.get() + "'")
-        data = mycursor.fetchall()
         asiscreen = Toplevel()
         asiscreen.geometry('400x500')
         asicanvas = Canvas(asiscreen, width=700, height=700, highlightbackground='yellow')
@@ -291,6 +302,7 @@ class Login:
         aframe = Frame(asiscreen, width=300, height=200, bg='#aaa')
         aframe.place(x=50, y=250)
 
+        # function to count how many people are currently signed in
         def count():
             mycursor.execute("SELECT * FROM Signin WHERE Sign_in_date=curdate() AND Sign_out_time is NULL")
             records=mycursor.fetchall()
@@ -301,6 +313,7 @@ class Login:
         refreshbtn = Button(asiscreen, text='Refresh Users', command=count)
         refreshbtn.place(x=50, y=220)
 
+        # function to sign out admin user
         def asignout():
             so_tcurrent = datetime.now().time().strftime('%H:%M:%S')
             so_dcurrent = datetime.now().date().strftime('%Y-%m-%d')
@@ -317,11 +330,13 @@ class Login:
         signoutbtn = Button(aframe, text='Sign Out', command=asignout)
         signoutbtn.place(x=120, y=100)
 
+        # function that calls the screen where the admin can add, edit or delete users from database
         def editusers():
             escreen = Toplevel()
             escreen.geometry('940x600')
             escreen.resizable(0, 0)
 
+            # function to take data from row in treeview and display it in the user details editor
             def dataselect(event=None):
                 if users.selection() == ():
                     pass
@@ -365,6 +380,7 @@ class Login:
             users.heading(7, text='Next Of Kin Name', anchor=CENTER)
             users.heading(8, text='Next Of Kin No.', anchor=CENTER)
 
+            # function to fill treeview with database data
             def tvinsert():
                 mycursor.execute('SELECT users.*, next_of_kin.Name, next_of_kin.Phone_number FROM users '
                                  'INNER JOIN next_of_kin ON users.ID = next_of_kin.ID')
@@ -424,6 +440,7 @@ class Login:
             anextofkinnoentry = Entry(addframe, highlightbackground='black', highlightthickness=1, width=14)
             anextofkinnoentry.place(x=150, y=240)
 
+            # function that allows the admin to add users to the database
             def adduser():
                 if (aidentry.get() == '' or anameentry.get() == '' or asurnameentry.get() == ''
                         or anumberentry.get() == '' or apasswordentry.get() == '' or aroleset.get() == 'Select your role'
@@ -506,6 +523,7 @@ class Login:
             enextofkinnoentry = Entry(editframe, highlightbackground='black', highlightthickness=1, width=14)
             enextofkinnoentry.place(x=150, y=240)
 
+            # function that allows the admin to edit the details of a user in the database
             def edituser():
                 edata = users.focus()
                 items = users.item(edata)
@@ -550,6 +568,7 @@ class Login:
             id, name, surname, contactno, password, role, nextokin name, nextokin contactno
             """
 
+            # function that brings the add user frame into view
             def adduserfunc():
                 editframe.place(x=1000, y=1000)
                 addframe.place(x=200, y=290)
@@ -557,6 +576,7 @@ class Login:
             addbtn = Button(escreen, text='Add user', command=adduserfunc)
             addbtn.place(x=50, y=350)
 
+            # function that brings the edit user frame into view
             def edituserfunc():
                 addframe.place(x=1000, y=1000)
                 editframe.place(x=200, y=290)
@@ -564,6 +584,7 @@ class Login:
             edbtn = Button(escreen, text='Edit user', command=edituserfunc)
             edbtn.place(x=50, y=400)
 
+            # function to delete user from database
             def deleteuser():
                 editframe.place(x=1000, y=1000)
                 edata = users.focus()
@@ -583,6 +604,7 @@ class Login:
         modifybtn = Button(aframe, text='Edit database', command=editusers)
         modifybtn.place(x=60, y=50)
 
+        # function that calls window where the admin can sign out users
         def logprivilege():
             lscreen = Toplevel()
             lscreen.geometry('560x500')
@@ -606,6 +628,7 @@ class Login:
             si_users.heading(5, text='Sign out date', anchor=CENTER)
             si_users.heading(6, text='Sign out time', anchor=CENTER)
 
+            # function to fill the treeview with data from the database
             def tvinsert():
                 mycursor.execute('SELECT * FROM Signin')
                 records = mycursor.fetchall()
@@ -615,6 +638,7 @@ class Login:
             tvinsert()
             si_users.place(x=25, y=50)
 
+            # function that allows the admin user to sign out other users
             def loguserout():
                 if si_users.selection() == ():
                     messagebox.showerror("Error", "Please select user to log out")
@@ -645,9 +669,6 @@ class Login:
         logbtn.place(x=150, y=50)
 
         asiscreen.mainloop()
-
-    # def adminsigninscreen(self):
-    #
 
 
 login = Login(root)
